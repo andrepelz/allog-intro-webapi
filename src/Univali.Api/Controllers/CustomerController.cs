@@ -1,73 +1,144 @@
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Univali.Api.Entities;
+using Univali.Api.Models;
 
 namespace Univali.Api.Controllers;
 
 [ApiController]
 [Route("api/customers")]
 public class CustomerController : ControllerBase {
-    private CustomerMapper _mapper = CustomerMapper.Instance;
+    internal CustomerMapper _mapper = CustomerMapper.Instance;
 
     
 
     [HttpGet]
     public ActionResult<IEnumerable<CustomerDto> > GetCustomers() {
-        var result = new List<CustomerDto>();
+        var customers = Data.Instance.Customers;
+        var customersToReturn = customers.Select(c => _mapper.ToDto(c));
 
-        foreach(var c in Data.Instance.Customers)
-            result.Add(_mapper.ToDto(c));
+        return Ok(customersToReturn);
+    }
 
-        return Ok(result);
+    [HttpGet("with-addresses")]
+    public ActionResult<IEnumerable<CustomerDto> > GetCustomersWithAddresses() {
+        var customers = Data.Instance.Customers;
+        var customersToReturn = customers.Select(c => _mapper.ToWithAddressesDto(c));
+
+        return Ok(customersToReturn);
     }
 
     [HttpGet("{id}", Name = "GetCustomerById")]
     public ActionResult<CustomerDto> GetCustomerById(int id) {
-        var customer = Data.Instance.Customers.FirstOrDefault(x => x.Id == id);
-        var result = _mapper.ToDto(customer);
+        var customerFromDatabase = Data.Instance
+            .Customers.FirstOrDefault(c => c.Id == id);
 
-        return result != null ? Ok(result) : NotFound();
+        var customerToReturn = _mapper.ToDto(customerFromDatabase);
+
+        return customerToReturn != null ? Ok(customerToReturn) : NotFound();
     }
 
     [HttpGet("cpf/{cpf}", Name = "GetCustomerByCpf")]
     public ActionResult<CustomerDto> GetCustomerByCpf(string cpf) {
-        var customer = Data.Instance.Customers.FirstOrDefault(x => x.Cpf == cpf);
-        var result = _mapper.ToDto(customer);
+        var customerFromDatabase = Data.Instance
+            .Customers.FirstOrDefault(c => c.Cpf == cpf);
 
-        return result != null ? Ok(result) : NotFound();
+        var customerToReturn = _mapper.ToDto(customerFromDatabase);
+
+        return customerToReturn != null ? Ok(customerToReturn) : NotFound();
     }
 
     [HttpPost]
-    public ActionResult<CustomerCreateDto> CreateCustomer(CustomerCreateDto customer) {
-        int id = Data.Instance.Customers.Max(c => c.Id) + 1;
-        var newCustomer = _mapper.ToCustomer(id, customer);
+    public ActionResult<CustomerDto> CreateCustomer(CustomerCreateDto customerCreateDto) {
+        var customers = Data.Instance.Customers;
+        int newCustomerId = customers.Any() ? customers.Max(c => c.Id) + 1 : 1;
 
-        Data.Instance.Customers.Add(newCustomer);
+        var newCustomer = _mapper.ToCustomer(customerCreateDto);
+        newCustomer.Id = newCustomerId;
+
+        customers.Add(newCustomer);
+        
+        var customerToReturn = _mapper.ToDto(newCustomer);
 
         return CreatedAtRoute(
             "GetCustomerById",
-            new { id = newCustomer.Id },
-            customer
+            new { Id = customerToReturn.Id },
+            customerToReturn
+        );
+    }
+
+    [HttpPost("with-addresses")]
+    public ActionResult<CustomerWithAddressesDto> CreateCustomerWithAddresses(CustomerWithAddressesCreateDto customerWithAddressesCreateDto) {
+        var customers = Data.Instance.Customers;
+        int newCustomerId = customers.Any() ? customers.Max(c => c.Id) + 1 : 1;
+
+        var newCustomer = _mapper.ToCustomer(customerWithAddressesCreateDto);
+        newCustomer.Id = newCustomerId;
+
+        customers.Add(newCustomer);
+
+        foreach(var addressCreateDto in customerWithAddressesCreateDto.Addresses) {
+            var addresses = customers.SelectMany(c => c.Addresses);
+            int newAddressId = addresses.Any() ? addresses.Max(c => c.Id) + 1 : 1;
+
+            var newAddress = AddressMapper.Instance.ToAddress(addressCreateDto);
+            newAddress.Id = newAddressId;
+
+            newCustomer.Addresses.Add(newAddress);
+        }
+        
+        var customerToReturn = _mapper.ToWithAddressesDto(newCustomer);
+
+        return CreatedAtRoute(
+            "GetCustomerById",
+            new { Id = customerToReturn.Id },
+            customerToReturn
         );
     }
 
     [HttpPut("{id}")]
-    public ActionResult<CustomerCreateDto> UpdateCustomer(int id, CustomerCreateDto customer) {
-        var newCustomer = Data.Instance.Customers.FirstOrDefault(c => c.Id == id);
+    public ActionResult UpdateCustomer(int id, CustomerUpdateDto customerUpdateDto) {
+        var customerFromDatabase = Data.Instance.Customers.FirstOrDefault(c => c.Id == id);
 
-        if(newCustomer != null) {
-            newCustomer.Name = customer.Name;
-            newCustomer.Cpf = customer.Cpf;
+        if(customerFromDatabase != null) {
+            customerFromDatabase.Update(customerUpdateDto);
+            
+            var customerToReturn = _mapper.ToDto(customerFromDatabase);
 
-            return Ok(customer);
-        } else {
-            return NotFound();
+            return NoContent();
         }
+
+        return NotFound();
     }
 
     [HttpDelete("{id}")]
     public ActionResult DeleteCustomer(int id) {
         var customers = Data.Instance.Customers;
-        customers.Remove(customers.FirstOrDefault(c => c.Id == id));
-        return NoContent();
+        var customerFromDatabase = customers.FirstOrDefault(c => c.Id == id);
+
+        bool success = customers.Remove(customerFromDatabase);
+
+        return success ? NoContent() : NotFound();
+    }
+
+    [HttpPatch("{id}")]
+    public ActionResult PartiallyUpdateCustomer(
+        [FromBody] JsonPatchDocument<CustomerPatchDto> patchDocument, 
+        [FromRoute] int id
+    ) {
+        var customerFromDatabase = Data.Instance.Customers
+            .FirstOrDefault(c => c.Id == id);
+
+        if (customerFromDatabase != null) {
+            var customerToPatch = _mapper.ToPatchDto(customerFromDatabase);
+
+            patchDocument.ApplyTo(customerToPatch);
+
+            customerFromDatabase.Patch(customerToPatch);
+
+            return NoContent();
+        }
+
+        return NotFound();
     }
 }

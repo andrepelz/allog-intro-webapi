@@ -1,44 +1,47 @@
+using Univali.Api.Models;
+
 namespace Univali.Api.Entities;
 
 public class Customer {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Cpf { get; set; } = string.Empty;
-}
+    public List<Address> Addresses { get; set; } = new List<Address>();
 
+    public void Update(CustomerUpdateDto newData) {
+        this.Name = newData.Name;
+        this.Cpf = newData.Cpf;
 
+        var newAddresses = new List<Address>();
+        var addresses = Data.Instance.Customers.SelectMany(c => c.Addresses);
+        foreach(var addressCreateDto in newData.Addresses) {
+            int newAddressId = addresses.Any() ? addresses.Max(c => c.Id) + 1 : 1;
 
-/// <summary> DTO for Customer query </summary>
-public class CustomerDto { 
-    public string Name { get; set; } = string.Empty;
-}
+            var newAddress = AddressMapper.Instance.ToAddress(addressCreateDto);
+            newAddress.Id = newAddressId;
 
-/// <summary> DTO for Customer creation </summary>
-public class CustomerCreateDto { 
-    public string Name { get; set; } = string.Empty;
-    public string Cpf { get; set; } = string.Empty;
-}
+            newAddresses.Add(newAddress);
+        }
 
-
-/// <summary> Singleton DTO mapper for Customer </summary>
-public class CustomerMapper { 
-    private static CustomerMapper? _instance;
-
-    private CustomerMapper() {}
-
-
-
-    public CustomerDto? ToDto(Customer? c) {
-        return c != null ? new CustomerDto { Name = c.Name } : null;
+        this.Addresses = newAddresses;
     }
 
-    public Customer ToCustomer(int id, CustomerCreateDto dto) {
-        return new Customer { Id = id, Name = dto.Name, Cpf = dto.Cpf };
-    }
+    public void Patch(CustomerPatchDto newData) {
+        this.Name = newData.Name;
+        this.Cpf = newData.Cpf;
 
+        var newAddresses = new List<Address>();
+        this.Addresses = newAddresses;
+        
+        var addresses = Data.Instance.Customers.SelectMany(c => c.Addresses);
+        foreach(var addressDto in newData.Addresses) {
+            int newAddressId = addresses.Any() ? addresses.Max(c => c.Id) + 1 : 1;
 
+            var newAddress = AddressMapper.Instance.ToAddress(addressDto);
+            if(newAddress.Id == 0)
+                newAddress.Id = newAddressId;
 
-    public static CustomerMapper Instance { 
-        get { return _instance ??= new CustomerMapper(); } 
+            newAddresses.Add(newAddress);
+        }
     }
 }

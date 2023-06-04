@@ -5,19 +5,38 @@ namespace Univali.Api;
 public class Data {
     private static Data? _instance;
 
-    private Data() { 
-        Customers = new List<Customer>() {
+    private Data() {
+        Customers = new List<Customer> {
             new Customer {
                 Id = 1,
                 Name = "Linus Torvalds",
-                Cpf = "12345678901"
+                Cpf = "73473943096",
+                Addresses = new List<Address>{
+                    new Address {
+                        Id = 1,
+                        Street = "Verão do Cometa",
+                        City = "Elvira"
+                    },
+                    new Address {
+                        Id = 2,
+                        Street = "Borboletas Psicodélicas",
+                        City = "Perobia"
+                    }
+                }
             },
             new Customer {
-                Id = 2, 
-                Name = "Bill Gates", 
-                Cpf = "10987654321"
+                Id = 2,
+                Name = "Elon Musk",
+                Cpf = "95395994076",
+                Addresses = new List<Address> {
+                    new Address {
+                        Id = 3,
+                        Street = "Canção Excêntrica",
+                        City = "Salandra"
+                    }
+                }
             }
-        }; 
+        };
     }
 
     public static Data Instance { 

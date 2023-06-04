@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\Program Files (x86)\\trabalho\\Curso Allog Enter\\Modulo 1\\4- intro Web APIs\\webapi\\src\\Univali.Api\\Univali.Api.csproj": {}
+    "E:\\Program Files (x86)\\trabalho\\Curso Allog Enter\\Modulo 1\\4- intro Web APIs\\webapi - Copia\\src\\Univali.Api\\Univali.Api.csproj": {}
   },
   "projects": {
-    "E:\\Program Files (x86)\\trabalho\\Curso Allog Enter\\Modulo 1\\4- intro Web APIs\\webapi\\src\\Univali.Api\\Univali.Api.csproj": {
+    "E:\\Program Files (x86)\\trabalho\\Curso Allog Enter\\Modulo 1\\4- intro Web APIs\\webapi - Copia\\src\\Univali.Api\\Univali.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\Program Files (x86)\\trabalho\\Curso Allog Enter\\Modulo 1\\4- intro Web APIs\\webapi\\src\\Univali.Api\\Univali.Api.csproj",
+        "projectUniqueName": "E:\\Program Files (x86)\\trabalho\\Curso Allog Enter\\Modulo 1\\4- intro Web APIs\\webapi - Copia\\src\\Univali.Api\\Univali.Api.csproj",
         "projectName": "Univali.Api",
-        "projectPath": "E:\\Program Files (x86)\\trabalho\\Curso Allog Enter\\Modulo 1\\4- intro Web APIs\\webapi\\src\\Univali.Api\\Univali.Api.csproj",
+        "projectPath": "E:\\Program Files (x86)\\trabalho\\Curso Allog Enter\\Modulo 1\\4- intro Web APIs\\webapi - Copia\\src\\Univali.Api\\Univali.Api.csproj",
         "packagesPath": "C:\\Users\\Avell\\.nuget\\packages\\",
-        "outputPath": "E:\\Program Files (x86)\\trabalho\\Curso Allog Enter\\Modulo 1\\4- intro Web APIs\\webapi\\src\\Univali.Api\\obj\\",
+        "outputPath": "E:\\Program Files (x86)\\trabalho\\Curso Allog Enter\\Modulo 1\\4- intro Web APIs\\webapi - Copia\\src\\Univali.Api\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Avell\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -39,6 +39,14 @@
         "net7.0": {
           "targetAlias": "net7.0",
           "dependencies": {
+            "Microsoft.AspNetCore.JsonPatch": {
+              "target": "Package",
+              "version": "[7.0.4, )"
+            },
+            "Microsoft.AspNetCore.Mvc.NewtonsoftJson": {
+              "target": "Package",
+              "version": "[7.0.4, )"
+            },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[7.0.5, )"
